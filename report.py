@@ -50,12 +50,24 @@ def get_projects():
     data = json.loads(r.text)
     return data['data']
 
-def get_tasks(project_gid):
-    ''' Get the list of tasks for a given project_id '''
+def get_sections(project_gid):
+    ''' Get the list of sections for a given project '''
+    global API_TOKEN
+    global asana_base_URL
+    uri = '%s/projects/%s/sections'% (asana_base_URL, project_gid)
+    headers = {'Authorization': 'Bearer %s'% (API_TOKEN)}
+
+    r = requests.get(uri, headers=headers)
+    r.raise_for_status()
+    data = json.loads(r.text)
+    return data['data']
+
+def get_tasks(section):
+    ''' Get the list of tasks for a given section_gid '''
     global API_TOKEN
     global asana_base_URL
     #TODO: We're not paginating here, but we prolly should. i.e. limit=100
-    uri = '%s/projects/%s/tasks?opt_fields=dependencies,custom_fields,name,num_subtasks'% (asana_base_URL, project_gid)
+    uri = '%s/sections/%s/tasks?opt_fields=dependencies,custom_fields,name,num_subtasks'% (asana_base_URL, section['gid'])
     headers = {'Authorization': 'Bearer %s'% (API_TOKEN)}
     tasks = []
 
@@ -66,6 +78,7 @@ def get_tasks(project_gid):
     for task in data['data']:
         t = {}
         t['gid'] = task['gid']
+        t['section'] = section['name']
         t['name'] = "\"%s\""% (task['name'],)
         t['num_subtasks'] = task['num_subtasks']
         for cf in task['custom_fields']:
@@ -103,8 +116,14 @@ for project in projects:
 if project_gid is None:
     print("Couldn't find project with name %s"% (project_name,))
     sys.exit(2)
-    
-tasks = get_tasks(project_gid)
+
+# Get the list of sections
+sections = get_sections(project_gid)
+
+tasks = []
+
+for section in sections:
+    tasks.extend(get_tasks(section))
 
 # Get a list of fields
 fields = ['gid', 'name', 'num_subtasks']
