@@ -66,11 +66,11 @@ def get_tasks(project_gid):
     for task in data['data']:
         t = {}
         t['gid'] = task['gid']
-        t['name'] = task['name']
+        t['name'] = "\"%s\""% (task['name'],)
         t['num_subtasks'] = task['num_subtasks']
         for cf in task['custom_fields']:
             if cf['type'] == "text":
-                t[cf['name']] = cf['text_value']
+                t[cf['name']] = "\"%s\""% (cf['text_value'],)
             elif cf['type'] == "number":
                 t[cf['name']] = cf['number_value']
             elif cf['type'] == "enum":
@@ -131,6 +131,8 @@ for t in tasks:
                 for i in t[f]:
                     v += "%s|"% (i,)
                 v = v[:-1]
+            elif t[f] == "\"None\"":
+                v = ""
             elif t[f] is None:
                 v = ""
             else:
@@ -141,4 +143,4 @@ for t in tasks:
     # Strip the last comma
     print(task_string[:-1])
 
-          
+
