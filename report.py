@@ -98,6 +98,21 @@ def get_tasks(section):
 
     return tasks
 
+def get_stories(task):
+    ''' Get the list of stories for a given task_gid '''
+    global API_TOKEN
+    global asana_base_URL
+    #TODO: We're not paginating here, but we prolly should. i.e. limit=100
+    uri = '%s/tasks/%s/stories'% (asana_base_URL, task['gid'])
+    headers = {'Authorization': 'Bearer %s'% (API_TOKEN)}
+    stories = []
+    
+    r = requests.get(uri, headers=headers)
+    r.raise_for_status()
+    data = json.loads(r.text)
+    for story in data['data']:
+        print(story)
+
 ## MAIN
 
 get_configuration('report.conf')
@@ -139,6 +154,10 @@ for f in fields:
 # Strip the last comma
 print(field_list[:-1])
 
+# # Print comments
+# for t in tasks:
+#     get_stories(t)    
+
 # Print the csv
 for t in tasks:
     task_string = ""
@@ -161,5 +180,4 @@ for t in tasks:
             task_string += ","
     # Strip the last comma
     print(task_string[:-1])
-
 
