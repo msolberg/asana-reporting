@@ -67,7 +67,7 @@ def get_tasks(section):
     global API_TOKEN
     global asana_base_URL
     #TODO: We're not paginating here, but we prolly should. i.e. limit=100
-    uri = '%s/sections/%s/tasks?opt_fields=dependencies,custom_fields,name,num_subtasks'% (asana_base_URL, section['gid'])
+    uri = '%s/sections/%s/tasks?opt_fields=dependencies,custom_fields,name,num_subtasks,created_at,completed_at'% (asana_base_URL, section['gid'])
     headers = {'Authorization': 'Bearer %s'% (API_TOKEN)}
     tasks = []
 
@@ -81,6 +81,11 @@ def get_tasks(section):
         t['section'] = section['name']
         t['name'] = "\"%s\""% (task['name'],)
         t['num_subtasks'] = task['num_subtasks']
+        try:
+            t['created'] = task['created_at'].split("T")[0]
+            t['completed'] = task['completed_at'].split("T")[0]
+        except AttributeError:
+            pass
         for cf in task['custom_fields']:
             if cf['type'] == "text":
                 t[cf['name']] = "\"%s\""% (cf['text_value'],)
